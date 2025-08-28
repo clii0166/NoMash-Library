@@ -1,15 +1,12 @@
-<!-- src/views/AboutView.vue -->
 <template>
-  <div class="about container py-4">
+  <div class="text-center">
     <h1>About Our Library</h1>
-    <p>Welcome to our digital library! We provide a wide collection of books and resources.</p>
+    <p class="lead mt-3">
+      Welcome to our digital library! We're dedicated to providing a vast collection of books and resources to our community.
+    </p>
   </div>
 </template>
 
 <script setup>
-// no script for now
+// no script needed
 </script>
-
-<style scoped>
-.about { line-height: 1.6; }
-</style>

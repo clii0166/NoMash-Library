@@ -1,144 +1,150 @@
 <template>
-  <div class="container mt-5">
-    <div class="row">
-      <!-- center the form on large screens -->
-      <div class="col-md-8 offset-md-2">
-        <h1 class="text-center">W5. Library Registration Form</h1>
+ 
+  <div class="row">
+    <!-- center the form on large screens -->
+    <div class="col-md-8 offset-md-2">
+      <h1 class="text-center">W5. Library Registration Form</h1>
+      
+      <p class="text-center text-muted mb-4">
+        Let's build some more advanced features into our form.
+      </p>
 
-        <!-- form: prevent native submit, we handle it in submitForm() -->
-        <form @submit.prevent="submitForm">
-          <!-- Row 1: Username / Gender -->
-          <div class="row mb-3">
-            <!-- Use 12 columns on xs, 6 columns from >= sm to ensure 2-up at 600px and 900px -->
-            <div class="col-12 col-sm-6">
-              <label for="username" class="form-label">Username</label>
-              <input
-                type="text"
-                class="form-control"
-                id="username"
-                v-model="formData.username"
-                @blur="() => validateName(true)"
-                @input="() => validateName(false)"
-              />
-              <!-- username error -->
-              <div v-if="errors.username" class="text-danger mt-1">
-                {{ errors.username }}
-              </div>
-            </div>
-
-            <div class="col-12 col-sm-6">
-              <label for="gender" class="form-label">Gender</label>
-              <select id="gender" class="form-select" v-model="formData.gender">
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Row 2: Password / Confirm password -->
-          <div class="row mb-3">
-            <div class="col-12 col-sm-6">
-              <label for="password" class="form-label">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                v-model="formData.password"
-                @blur="() => validatePassword(true)"
-                @input="() => validatePassword(false)"
-              />
-              <!-- password error -->
-              <div v-if="errors.password" class="text-danger mt-1">
-                {{ errors.password }}
-              </div>
-            </div>
-
-            <!-- Confirm password (blur only) -->
-            <div class="col-12 col-sm-6">
-              <label for="confirm-password" class="form-label">Confirm password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="confirm-password"
-                v-model="formData.confirmPassword"
-                @blur="() => validateConfirmPassword(true)"
-              />
-              <!-- confirm password error -->
-              <div v-if="errors.confirmPassword" class="text-danger mt-1">
-                {{ errors.confirmPassword }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 3: Resident -->
-          <div class="row mb-3">
-            <div class="col-12 col-sm-6">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  id="isAustralian"
-                  v-model="formData.isAustralian"
-                />
-                <label class="form-check-label" for="isAustralian"> Australian Resident? </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Row 4: Reason -->
-          <div class="mb-3">
-            <label for="reason" class="form-label">Reason for joining</label>
-            <textarea
-              class="form-control"
-              id="reason"
-              rows="3"
-              v-model="formData.reason"
-              @blur="() => validateReason(true)"
-              @input="() => validateReason(false)"
-            ></textarea>
-
-            <!-- red error (min length) -->
-            <div v-if="errors.reason" class="text-danger mt-1">{{ errors.reason }}</div>
-            <!-- green success (contains 'friend') -->
-            <div v-if="reasonFeedback" class="text-success mt-1">{{ reasonFeedback }}</div>
-          </div>
-
-          <!-- Row 5: Suburb (one-way binding demo: :value instead of v-model) -->
-          <div class="mb-3">
-            <label for="suburb" class="form-label">Suburb</label>
+      <!-- form: prevent native submit, we handle it in submitForm() -->
+      <form @submit.prevent="submitForm">
+        <!-- Row 1: Username / Gender -->
+        <div class="row mb-3">
+          <!-- Use 12 columns on xs, 6 columns from >= sm to ensure 2-up at 600px and 900px -->
+          <div class="col-12 col-sm-6">
+            <label for="username" class="form-label">Username</label>
             <input
-              id="suburb"
               type="text"
               class="form-control"
-              :value="formData.suburb"
+              id="username"
+              v-model="formData.username"
+              @blur="() => validateName(true)"
+              @input="() => validateName(false)"
             />
+            <!-- username error -->
+            <div v-if="errors.username" class="text-danger mt-1">
+              {{ errors.username }}
+            </div>
           </div>
 
-          <!-- Buttons: centered on all sizes -->
-          <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
+          <div class="col-12 col-sm-6">
+            <label for="gender" class="form-label">Gender</label>
+            <select id="gender" class="form-select" v-model="formData.gender">
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
           </div>
-        </form>
+        </div>
 
-        <!-- PrimeVue DataTable -->
-        <DataTable
-          v-if="submittedRows.length"
-          :value="submittedRows"
-          class="mt-4 datatable-full"
-          tableStyle="width: 100%; min-width: 0"
-          size="small"
-        >
-          <Column field="username" header="Username" />
-          <Column field="password" header="Password" />
-          <Column field="isAustralian" header="Australian Resident" />
-          <Column field="gender" header="Gender" />
-          <Column field="reason" header="Reason" />
-        </DataTable>
-        <!-- /PrimeVue DataTable -->
-      </div>
+        <!-- Row 2: Password / Confirm password -->
+        <div class="row mb-3">
+          <div class="col-12 col-sm-6">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              v-model="formData.password"
+              @blur="() => validatePassword(true)"
+              @input="() => validatePassword(false)"
+            />
+            <!-- password error -->
+            <div v-if="errors.password" class="text-danger mt-1">
+              {{ errors.password }}
+            </div>
+          </div>
+
+          <!-- Confirm password (blur only) -->
+          <div class="col-12 col-sm-6">
+            <label for="confirm-password" class="form-label">Confirm password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="confirm-password"
+              v-model="formData.confirmPassword"
+              @blur="() => validateConfirmPassword(true)"
+            />
+            <!-- confirm password error -->
+            <div v-if="errors.confirmPassword" class="text-danger mt-1">
+              {{ errors.confirmPassword }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: Resident -->
+        <div class="row mb-3">
+          <div class="col-12 col-sm-6">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="isAustralian"
+                v-model="formData.isAustralian"
+              />
+              <label class="form-check-label" for="isAustralian"> Australian Resident? </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 4: Reason -->
+        <div class="mb-3">
+          <label for="reason" class="form-label">Reason for joining</label>
+          <textarea
+            class="form-control"
+            id="reason"
+            rows="3"
+            v-model="formData.reason"
+            @blur="() => validateReason(true)"
+            @input="() => validateReason(false)"
+          ></textarea>
+
+          <!-- red error (min length) -->
+          <div v-if="errors.reason" class="text-danger mt-1">{{ errors.reason }}</div>
+          <!-- green success (contains 'friend') -->
+          <div v-if="reasonFeedback" class="text-success mt-1">{{ reasonFeedback }}</div>
+        </div>
+
+        <!-- Row 5: Suburb (one-way binding demo: :value instead of v-model) -->
+        <div class="mb-3">
+          <label for="suburb" class="form-label">Suburb</label>
+          <input
+            id="suburb"
+            type="text"
+            class="form-control"
+            :value="formData.suburb"
+          />
+        </div>
+
+        <!-- Buttons: centered on all sizes -->
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
+        </div>
+      </form>
+
+    
+      <p class="mt-4 fw-semibold">This is a Primevue Datatable.</p>
+
+      <!-- PrimeVue DataTable -->
+      <DataTable
+        v-if="submittedRows.length"
+        :value="submittedRows"
+        class="datatable-full"
+        tableStyle="width: 100%; min-width: 0"
+        size="small"
+      >
+        <Column field="username" header="Username" />
+        <Column field="password" header="Password" />
+        <Column field="isAustralian" header="Australian Resident" />
+        <Column field="gender" header="Gender" />
+        <Column field="reason" header="Reason" />
+      </DataTable>
+      <!-- /PrimeVue DataTable -->
     </div>
   </div>
 </template>
