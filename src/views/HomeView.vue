@@ -55,7 +55,7 @@
               </div>
             </div>
 
-            <!-- NEW: Confirm password (blur only) -->
+            <!-- Confirm password (blur only) -->
             <div class="col-12 col-sm-6">
               <label for="confirm-password" class="form-label">Confirm password</label>
               <input
@@ -105,6 +105,17 @@
             <div v-if="reasonFeedback" class="text-success mt-1">{{ reasonFeedback }}</div>
           </div>
 
+          <!-- Row 5: Suburb (one-way binding demo: :value instead of v-model) -->
+          <div class="mb-3">
+            <label for="suburb" class="form-label">Suburb</label>
+            <input
+              id="suburb"
+              type="text"
+              class="form-control"
+              :value="formData.suburb"
+            />
+          </div>
+
           <!-- Buttons: centered on all sizes -->
           <div class="d-flex justify-content-center gap-2 flex-wrap">
             <button type="submit" class="btn btn-primary">Submit</button>
@@ -148,6 +159,7 @@ const formData = ref({
   isAustralian: false,
   reason: '',
   gender: '',
+  suburb: 'Clayton',     // NEW FIELD for one-way binding demo
 })
 
 // submitted rows for DataTable
@@ -274,6 +286,7 @@ const clearForm = () => {
     isAustralian: false,
     reason: '',
     gender: '',
+    // NOTE: suburb intentionally omitted to keep only requested two changes
   }
   errors.value.username = null
   errors.value.password = null
