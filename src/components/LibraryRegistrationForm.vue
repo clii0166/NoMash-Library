@@ -1,45 +1,175 @@
+<template>
+  <div class="container mt-5">
+    <div class="row">
+      <!-- center the form on large screens -->
+      <div class="col-md-8 offset-md-2">
+        <h1 class="text-center">W5. Library Registration Form</h1>
+
+        <!-- form: prevent native submit, we handle it in submitForm() -->
+        <form @submit.prevent="submitForm">
+          <!-- Row 1: Username / Gender -->
+          <div class="row mb-3">
+            <!-- Use 12 columns on xs, 6 columns from >= sm to ensure 2-up at 600px and 900px -->
+            <div class="col-12 col-sm-6">
+              <label for="username" class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                v-model="formData.username"
+                @blur="() => validateName(true)"
+                @input="() => validateName(false)"
+              />
+              <!-- username error -->
+              <div v-if="errors.username" class="text-danger mt-1">
+                {{ errors.username }}
+              </div>
+            </div>
+
+            <div class="col-12 col-sm-6">
+              <label for="gender" class="form-label">Gender</label>
+              <select id="gender" class="form-select" v-model="formData.gender">
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Password / Confirm password -->
+          <div class="row mb-3">
+            <div class="col-12 col-sm-6">
+              <label for="password" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                v-model="formData.password"
+                @blur="() => validatePassword(true)"
+                @input="() => validatePassword(false)"
+              />
+              <!-- password error -->
+              <div v-if="errors.password" class="text-danger mt-1">
+                {{ errors.password }}
+              </div>
+            </div>
+
+            <!-- NEW: Confirm password (blur only) -->
+            <div class="col-12 col-sm-6">
+              <label for="confirm-password" class="form-label">Confirm password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="confirm-password"
+                v-model="formData.confirmPassword"
+                @blur="() => validateConfirmPassword(true)"
+              />
+              <!-- confirm password error -->
+              <div v-if="errors.confirmPassword" class="text-danger mt-1">
+                {{ errors.confirmPassword }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 3: Resident -->
+          <div class="row mb-3">
+            <div class="col-12 col-sm-6">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="isAustralian"
+                  v-model="formData.isAustralian"
+                />
+                <label class="form-check-label" for="isAustralian"> Australian Resident? </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 4: Reason -->
+          <div class="mb-3">
+            <label for="reason" class="form-label">Reason for joining</label>
+            <textarea
+              class="form-control"
+              id="reason"
+              rows="3"
+              v-model="formData.reason"
+              @blur="() => validateReason(true)"
+              @input="() => validateReason(false)"
+            ></textarea>
+
+            <!-- red error (min length) -->
+            <div v-if="errors.reason" class="text-danger mt-1">{{ errors.reason }}</div>
+            <!-- green success (contains 'friend') -->
+            <div v-if="reasonFeedback" class="text-success mt-1">{{ reasonFeedback }}</div>
+          </div>
+
+          <!-- Buttons: centered on all sizes -->
+          <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
+          </div>
+        </form>
+
+        <!-- PrimeVue DataTable -->
+        <DataTable
+          v-if="submittedRows.length"
+          :value="submittedRows"
+          class="mt-4 datatable-full"
+          tableStyle="width: 100%; min-width: 0"
+          size="small"
+        >
+          <Column field="username" header="Username" />
+          <Column field="password" header="Password" />
+          <Column field="isAustralian" header="Australian Resident" />
+          <Column field="gender" header="Gender" />
+          <Column field="reason" header="Reason" />
+        </DataTable>
+        <!-- /PrimeVue DataTable -->
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
+// Vue reactivity
 import { ref } from 'vue'
+
+// PrimeVue components (local registration)
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 
+// reactive form model
 const formData = ref({
   username: '',
   password: '',
+  confirmPassword: '',   // NEW: confirm password
   isAustralian: false,
   reason: '',
-  gender: ''
+  gender: '',
 })
 
-const submittedCards = ref([])
+// submitted rows for DataTable
+const submittedRows = ref([])
 
-const submitForm = () => {
-  validateName(true)
-  validatePassword(true)
-  if (!errors.value.username && !errors.value.password) {
-    submittedCards.value.push({ ...formData.value })
-    clearForm()
-  }
-}
-
-const clearForm = () => {
-  formData.value = {
-    username: '',
-    password: '',
-    isAustralian: false,
-    reason: '',
-    gender: ''
-  }
-}
-
+// error messages (null = no error)
 const errors = ref({
   username: null,
   password: null,
+  confirmPassword: null, // NEW: confirm password error
   resident: null,
   gender: null,
-  reason: null
+  reason: null,
 })
 
+// green success line for "friend"
+const reasonFeedback = ref('')
+
+/**
+ * Validate username
+ * - at least 3 characters
+ */
 const validateName = (blur) => {
   if (formData.value.username.length < 3) {
     if (blur) errors.value.username = 'Name must be at least 3 characters'
@@ -48,13 +178,17 @@ const validateName = (blur) => {
   }
 }
 
+/**
+ * Validate password with common rules:
+ * - at least 8 chars, contains upper/lower/number/special
+ */
 const validatePassword = (blur) => {
   const password = formData.value.password
   const minLength = 8
   const hasUppercase = /[A-Z]/.test(password)
   const hasLowercase = /[a-z]/.test(password)
   const hasNumber = /\d/.test(password)
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+  const hasSpecialChar = /[!@#$%^&*()_+.,?:"{}|<>]/.test(password)
 
   if (password.length < minLength) {
     if (blur) errors.value.password = `Password must be at least ${minLength} characters long.`
@@ -70,151 +204,99 @@ const validatePassword = (blur) => {
     errors.value.password = null
   }
 }
+
+/**
+ * Validate confirm password
+ * - blur only: must equal password
+ */
+const validateConfirmPassword = (blur) => {
+  if (!blur) return
+  if (formData.value.password !== formData.value.confirmPassword) {
+    errors.value.confirmPassword = 'Passwords do not match.'
+  } else {
+    errors.value.confirmPassword = null
+  }
+}
+
+/**
+ * Validate reason:
+ * - on input: show green message if it contains 'friend' (case-insensitive)
+ * - on blur: show red error if length < 10
+ */
+const validateReason = (blur) => {
+  const txt = formData.value.reason || ''
+
+  // green success whenever it contains 'friend'
+  if (/friend/i.test(txt)) {
+    reasonFeedback.value = 'Great to have a friend'
+  } else {
+    reasonFeedback.value = ''
+  }
+
+  // red error only when leaving the field
+  if (blur) {
+    if (txt.trim().length < 10) {
+      errors.value.reason = 'Reason must be at least 10 characters'
+    } else {
+      errors.value.reason = null
+    }
+  }
+}
+
+/**
+ * Submit handler:
+ * - run all validations (as blur)
+ * - push a row when everything is valid
+ */
+const submitForm = () => {
+  validateName(true)
+  validatePassword(true)
+  validateConfirmPassword(true)
+  validateReason(true)
+
+  if (
+    !errors.value.username &&
+    !errors.value.password &&
+    !errors.value.confirmPassword &&
+    !errors.value.reason
+  ) {
+    submittedRows.value.push({ ...formData.value })
+    clearForm()
+  }
+}
+
+/** Clear only the form inputs (not the submitted rows) */
+const clearForm = () => {
+  formData.value = {
+    username: '',
+    password: '',
+    confirmPassword: '',
+    isAustralian: false,
+    reason: '',
+    gender: '',
+  }
+  errors.value.username = null
+  errors.value.password = null
+  errors.value.confirmPassword = null
+  errors.value.reason = null
+  reasonFeedback.value = ''
+}
 </script>
 
-<template>
-  <!-- 🗄️ W3. Library Registration Form -->
-  <div class="container mt-5">
-    <div class="row">
-      <div class="col-md-8 offset-md-2">
-        <h1 class="text-center">🗄️ W4. Library Registration Form</h1>
-        <p class="text-center">
-          This form now includes validation. Registered users are displayed in a data table below
-          (PrimeVue).
-        </p>
-        <form @submit.prevent="submitForm">
-          <div class="row mb-3">
-            <div class="col-md-6 col-sm-6">
-              <label for="username" class="form-label">Username</label>
-              <input
-                type="text"
-                class="form-control"
-                id="username"
-                @blur="() => validateName(true)"
-                @input="() => validateName(false)"
-                v-model="formData.username"
-              />
-              <div v-if="errors.username" class="text-danger">{{ errors.username }}</div>
-            </div>
-
-            <div class="col-md-6 col-sm-6">
-              <label for="password" class="form-label">Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                @blur="() => validatePassword(true)"
-                @input="() => validatePassword(false)"
-                v-model="formData.password"
-              />
-              <div v-if="errors.password" class="text-danger">{{ errors.password }}</div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6 col-sm-6">
-              <div class="form-check">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  id="isAustralian"
-                  v-model="formData.isAustralian"
-                />
-                <label class="form-check-label" for="isAustralian">Australian Resident?</label>
-              </div>
-            </div>
-            <div class="col-md-6 col-sm-6">
-              <label for="gender" class="form-label">Gender</label>
-              <select class="form-select" id="gender" v-model="formData.gender" required>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-3">
-            <label for="reason" class="form-label">Reason for joining</label>
-            <textarea
-              class="form-control"
-              id="reason"
-              rows="3"
-              v-model="formData.reason"
-            ></textarea>
-          </div>
-          <div class="text-center">
-            <button type="submit" class="btn btn-primary me-2">Submit</button>
-            <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="row mt-5">
-    <h4>This is a Primevue Datatable.</h4>
-    <DataTable :value="submittedCards" tableStyle="min-width: 50rem">
-      <Column field="username" header="Username"></Column>
-      <Column field="password" header="Password"></Column>
-      <Column field="isAustralian" header="Australian Resident"></Column>
-      <Column field="gender" header="Gender"></Column>
-      <Column field="reason" header="Reason"></Column>
-    </DataTable>
-  </div>
-
-  <div class="row mt-5" v-if="submittedCards.length">
-    <div class="d-flex flex-wrap justify-content-start">
-      <div
-        v-for="(card, index) in submittedCards"
-        :key="index"
-        class="card m-2"
-        style="width: 18rem"
-      >
-        <div class="card-header">User Information</div>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">Username: {{ card.username }}</li>
-          <li class="list-group-item">Password: {{ card.password }}</li>
-          <li class="list-group-item">
-            Australian Resident: {{ card.isAustralian ? 'Yes' : 'No' }}
-          </li>
-          <li class="list-group-item">Gender: {{ card.gender }}</li>
-          <li class="list-group-item">Reason: {{ card.reason }}</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-.container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 80vw;
-  margin: 0 auto;
-  padding: 20px;
-  /* background-color: #e0bfbf; */
-  border-radius: 10px;
+/* Make DataTable fill the container and avoid horizontal scroll */
+.datatable-full {
+  width: 100%;
 }
-
-/* Class selectors */
-.form {
-  text-align: center;
-  margin-top: 50px;
+/* PrimeVue wrapper sometimes adds overflow-x; relax it for this page */
+:deep(.p-datatable-wrapper) {
+  overflow-x: visible;
 }
-
-/* ID selectors */
-#username:focus,
-#password:focus,
-#isAustralian:focus,
-.card {
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+/* Optional cosmetic header for any Bootstrap cards you might keep later */
 .card-header {
   background-color: #275fda;
-  color: white;
+  color: #fff;
   padding: 10px;
   border-radius: 10px 10px 0 0;
-}
-.list-group-item {
-  padding: 10px;
 }
 </style>
