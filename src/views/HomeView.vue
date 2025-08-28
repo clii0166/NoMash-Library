@@ -126,8 +126,7 @@
           <button type="button" class="btn btn-secondary" @click="clearForm">Clear</button>
         </div>
       </form>
-
-    
+      
       <p class="mt-4 fw-semibold">This is a Primevue Datatable.</p>
 
       <!-- PrimeVue DataTable -->
